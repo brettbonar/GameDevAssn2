@@ -91,7 +91,7 @@
       for (let row = 0; row < settings.size; row++) {
         this.maze[row] = new Array(settings.size);
         for (let col = 0; col < settings.size; col++) {
-          this.maze[row][col] = new Cell({ row: row, col: col, size: settings.size });
+          this.maze[row][col] = new Cell({ y: row, x: col, size: settings.size });
         }
       }
     }

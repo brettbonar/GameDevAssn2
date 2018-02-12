@@ -5,8 +5,16 @@
       this.canvas = document.getElementById("canvas-main");
       this.context = this.canvas.getContext("2d");
       this.gameState = {
-        maze: new Game.Maze({ size: 10 })
+        maze: new Game.Maze({
+          size: {
+            rows: 20, columns: 20
+          }
+        })
       };
+    }
+
+    processInput() {
+      // TODO: stuff
     }
 
     update() {
@@ -23,6 +31,7 @@
       let elapsedTime = currentTime - this.previousTime;
       this.previousTime = currentTime;
     
+      this.processInput();
       this.update(elapsedTime);
       this.render(elapsedTime);
     

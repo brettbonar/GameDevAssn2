@@ -1,31 +1,47 @@
-class Line extends Graphic {
-  constructor(spec) {
-    super(spec);
-  }
+(function () {
+  class Line extends Game.Graphic {
+    constructor(spec) {
+      super(spec);
+    }
 
-  draw(context) {
-    context.save();
-    context.translate(this.center.x, this.center.y);
-    context.rotate(this.rotation);
-    context.translate(-this.center.x, -this.center.y);
-
-    context.beginPath();
-
-    this.lines.forEach(function (line) {
-      context.moveTo(line[0].point.x, line[0].point.y);
+    static drawLine(context, line) {
+      context.moveTo(line[0].x, line[0].y);
       line.forEach(function (point) {
         // TODO: problem with doing first point twice?
         context.lineTo(point.x, point.y);
-      })
-    });
+      });
+    }
 
-    context.closePath();
+    static draw(context, params) {
+      context.save();
+      // context.translate(params.center.x, params.center.y);
+      // context.rotate(params.rotation);
+      // context.translate(-params.center.x, -params.center.y);
 
-    context.fillStyle = this.fillStyle;
-    context.fill();
-    context.strokeStyle = this.strokeStyle;
-    context.stroke();
+      context.beginPath();
 
-    context.restore();
+      if (params.lines) {
+        params.lines.forEach(function (line) {
+          Line.drawLine(context, line);
+        });
+      } else if (params.line) {
+        Line.drawLine(context, params.line);
+      }
+
+      context.closePath();
+
+      context.fillStyle = params.fillStyle;
+      context.fill();
+      context.strokeStyle = params.strokeStyle;
+      context.stroke();
+
+      context.restore();
+    }
+
+    render(context) {
+      Line.drawLine(context, this);
+    }
   }
-}
+
+  Game.Line = Line;
+})();

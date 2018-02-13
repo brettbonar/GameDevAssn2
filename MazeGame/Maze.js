@@ -55,30 +55,33 @@
     }
 
     getLineParams(context, line, settings) {
-      let params = {
-        line: [],
-        strokeStyle: settings.strokeStyle,
-        fillStyle: settings.fillStyle
-      };
+      let lineParams = [];
       let xScale = context.canvas.width / settings.size.columns;
       let yScale = context.canvas.height / settings.size.rows;
       let scale = Math.min(xScale, yScale);
 
       line.forEach(function (point) {
-        params.line.push({
+        lineParams.push({
           x: point.x * scale,
           y: point.y * scale
         });
       });
 
-      return params;
+      return lineParams;
     }
 
     render(context, settings) {
+      let lines = []
       Object.values(this.neighbors).forEach((neighbor) => {
         if (neighbor.cell) {
-          Game.Line.draw(context, this.getLineParams(context, neighbor.line, settings));
+          lines.push(this.getLineParams(context, neighbor.line, settings));
         }
+      });
+
+      Game.Line.draw(context, {
+        lines: lines,
+        strokeStyle: settings.strokeStyle,
+        fillStyle: settings.fillStyle
       });
     }
   }

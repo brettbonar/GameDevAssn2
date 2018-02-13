@@ -1,4 +1,11 @@
 (function () {
+  const EVENTS = {
+    MOVE_UP: 0,
+    MOVE_DOWN: 1,
+    MOVE_LEFT: 2,
+    MOVE_RIGHT: 3
+  };
+  
   class MazeGame { 
     constructor() {
       // TODO: pass this in
@@ -9,8 +16,39 @@
           size: {
             rows: 20, columns: 20
           }
+        }),
+        player: new Game.Character({
+
         })
       };
+      this.inputs = [];
+      this.keyBindings = {
+        37: EVENTS.MOVE_LEFT,
+        38: EVENTS.MOVE_UP,
+        39: EVENTS.MOVE_RIGHT,
+        40: EVENTS.MOVE_DOWN
+      };
+      this.eventHandlers = {};
+
+      this.eventHandlers[EVENTS.MOVE_LEFT] = function (event) {
+        this.gameState.player.move(event);
+      }
+      this.eventHandlers[EVENTS.MOVE_RIGHT] = function (event) {
+        this.gameState.player.move(event);
+      }
+      this.eventHandlers[EVENTS.MOVE_UP] = function (event) {
+        this.gameState.player.move(event);
+      }
+      this.eventHandlers[EVENTS.MOVE_DOWN] = function (event) {
+        this.gameState.player.move(event);
+      }
+    }
+
+    handleKeyEvent(e) {
+      let event = this.keyBindings[e.keyCode];
+      if (event) {
+        this.inputs.push(event);
+      }
     }
 
     processInput() {
@@ -41,7 +79,10 @@
     start() {
       this.previousTime = performance.now();
       requestAnimationFrame((currentTime) => this.gameLoop(currentTime));
+      document.addEventListener("keydown", (event) => this.handleKeyEvent(event));
     }
+
+    static get EVENTS() { return EVENTS; }
   }
 
   Game.MazeGame = MazeGame;

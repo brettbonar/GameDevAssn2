@@ -102,28 +102,28 @@
     }
 
     render(context) {
-      // let name = "";
+      let name = "";
 
-      // if (!this.neighbors.up.connected) {
-      //   name += "N";
-      // }
-      // if (!this.neighbors.down.connected) {
-      //   name += "S";
-      // }
-      // if (!this.neighbors.right.connected) {
-      //   name += "E";
-      // }
-      // if (!this.neighbors.left.connected) {
-      //   name += "W";
-      // }
+      if (!this.neighbors.up.connected) {
+        name += "N";
+      }
+      if (!this.neighbors.down.connected) {
+        name += "S";
+      }
+      if (!this.neighbors.right.connected) {
+        name += "E";
+      }
+      if (!this.neighbors.left.connected) {
+        name += "W";
+      }
 
-      // if (!name) {
-      //   name = "Empty";
-      // }
+      if (!name) {
+        name = "Empty";
+      }
 
-      // let x = this.position.x * this.mazeSettings.cellSize + this.mazeSettings.position.x;
-      // let y = this.position.y * this.mazeSettings.cellSize + this.mazeSettings.position.y;
-      // context.drawImage(this.images[name], x, y, this.mazeSettings.cellSize, this.mazeSettings.cellSize);
+      let x = this.position.x * this.mazeSettings.cellSize + this.mazeSettings.position.x;
+      let y = this.position.y * this.mazeSettings.cellSize + this.mazeSettings.position.y;
+      context.drawImage(this.images[name], x, y, this.mazeSettings.cellSize, this.mazeSettings.cellSize);
 
       // let lines = []
       // Object.values(this.neighbors).forEach((neighbor) => {
@@ -269,13 +269,13 @@
         });
       });
 
-      context.lineWidth = 12;
-      Game.Line.draw(context, {
-        lines: lines,
-        //strokeStyle: "#444444"
-        strokeStyle: context.createPattern(this.wall, "repeat")
-        // fillStyle: this.style.fillStyle
-      });
+      // context.lineWidth = 12;
+      // Game.Line.draw(context, {
+      //   lines: lines,
+      //   //strokeStyle: "#444444"
+      //   strokeStyle: context.createPattern(this.wall, "repeat")
+      //   // fillStyle: this.style.fillStyle
+      // });
     }
 
     getCell(position) {

@@ -23,7 +23,7 @@
           // height: this.canvas.height / 2
         }
       };
-      this.mazeSettings.cellSize = 40;
+      this.mazeSettings.cellSize = 48;
       // Center maze in canvas
       this.mazeSettings.position = {
         x: (this.canvas.width - this.mazeSettings.size.columns * this.mazeSettings.cellSize) / 2,

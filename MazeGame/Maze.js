@@ -147,16 +147,16 @@
       //   });
       // }
 
-      if (this.visited) {
-        let imgHeight = this.mazeSettings.cellSize / 3;
-        let imgWidth = imgHeight * this.breadcrumb.width / this.breadcrumb.height;
-        let offsetx = (this.mazeSettings.cellSize - imgWidth) / 2;
-        let offsety = (this.mazeSettings.cellSize - imgHeight) / 2;
-        let x = this.position.x * this.mazeSettings.cellSize + offsetx + this.mazeSettings.position.x;
-        let y = this.position.y * this.mazeSettings.cellSize + offsety + this.mazeSettings.position.y;
+      // if (this.visited) {
+      //   let imgHeight = this.mazeSettings.cellSize / 3;
+      //   let imgWidth = imgHeight * this.breadcrumb.width / this.breadcrumb.height;
+      //   let offsetx = (this.mazeSettings.cellSize - imgWidth) / 2;
+      //   let offsety = (this.mazeSettings.cellSize - imgHeight) / 2;
+      //   let x = this.position.x * this.mazeSettings.cellSize + offsetx + this.mazeSettings.position.x;
+      //   let y = this.position.y * this.mazeSettings.cellSize + offsety + this.mazeSettings.position.y;
 
-        context.drawImage(this.breadcrumb, x, y, imgWidth, imgHeight);
-      }
+      //   context.drawImage(this.breadcrumb, x, y, imgWidth, imgHeight);
+      // }
     }
   }
 
@@ -166,6 +166,12 @@
       this.wall.src = "Assets/wall.png";
       this.background = new Image();
       this.background.src = "Assets/background.png";
+
+      this.breadcrumb = new Image();
+      this.breadcrumb.src = "Assets/knob.png";
+      this.rope = new Image();
+      this.rope.src = "Assets/rope.png";
+
       this.visitedCells = [];
       this.settings = settings;
       this.maze = new Array(settings.size.columns);
@@ -251,7 +257,115 @@
       }
     }
 
+    drawRope(context, position, rotate, opposite) {
+      let imgHeight;
+      let imgWidth;
+      if (rotate) {    
+        imgHeight = this.settings.cellSize / 2;
+        imgWidth = imgHeight * this.rope.height / this.rope.width;
+      } else {
+        imgWidth = this.settings.cellSize / 2;
+        imgHeight = imgWidth * this.rope.height / this.rope.width;
+      }
+      let offsetx = (this.settings.cellSize - imgWidth) / 2;
+      let offsety = (this.settings.cellSize - imgHeight) / 2;
+
+      if (rotate) {
+        if (opposite) {
+          offsety -= this.settings.cellSize / 4;
+        } else {
+          offsety += this.settings.cellSize / 4;
+        }
+      } else {
+        if (opposite) {
+          offsetx += this.settings.cellSize / 4;
+        } else {
+          offsetx -= this.settings.cellSize / 4;
+        }
+      }
+
+
+      let x = position.x * this.settings.cellSize + offsetx + this.settings.position.x;
+      let y = position.y * this.settings.cellSize + offsety + this.settings.position.y;
+
+      if (rotate) {
+        // save the unrotated context of the canvas so we can restore it later
+        // the alternative is to untranslate & unrotate after drawing
+        context.save();
+        
+        context.translate(x + imgWidth / 2, y + imgHeight / 2);
+        context.rotate(Math.PI / 180);
+        context.translate(-(x + imgWidth / 2), -(y + imgHeight / 2));
+        
+        // we’re done with the rotating so restore the unrotated context
+        context.drawImage(this.rope, x, y, imgWidth, imgHeight);
+        context.restore();
+      } else {
+        context.drawImage(this.rope, x, y, imgWidth, imgHeight);
+      }
+      
+    }
+
+    drawBreadcrumbs(context) {
+      for (const i of this.visitedCells.keys()) {
+        let current = this.visitedCells[i];
+        let prev = this.visitedCells[i - 1];
+        let next = this.visitedCells[i + 1];
+
+        if (i > 0) {
+          // Prev
+          if (current.position.x > prev.position.x) {
+            // Horizontal, moved right
+            this.drawRope(context, current.position, false, false);
+          } else if (current.position.x < prev.position.x) {
+            // Horizontal, moved left
+            this.drawRope(context, current.position, false, true);
+          }
+
+          if (current.position.y > prev.position.y) {
+            // Horizontal, moved right
+            this.drawRope(context, current.position, true, true);
+          } else if (current.position.y < prev.position.y) {
+            // Horizontal, moved left
+            this.drawRope(context, current.position, true, false);
+          }
+        }
+
+        if (i < this.visitedCells.length - 1) {
+          // Next
+          if (current.position.x > next.position.x) {
+            // Horizontal, moved right
+            this.drawRope(context, current.position, false, false);
+          } else if (current.position.x < next.position.x) {
+            // Horizontal, moved left
+            this.drawRope(context, current.position, false, true);
+          }
+
+          if (current.position.y > next.position.y) {
+            // Horizontal, moved right
+            this.drawRope(context, current.position, true, true);
+          } else if (current.position.y < next.position.y) {
+            // Horizontal, moved left
+            this.drawRope(context, current.position, true, false);
+          }
+        }
+      }
+
+      for (const cell of this.visitedCells) {
+        let imgHeight = this.settings.cellSize / 4;
+        let imgWidth = imgHeight * this.breadcrumb.width / this.breadcrumb.height;
+        let offsetx = (this.settings.cellSize - imgWidth) / 2;
+        let offsety = (this.settings.cellSize - imgHeight) / 2;
+        let x = cell.position.x * this.settings.cellSize + offsetx + this.settings.position.x;
+        let y = cell.position.y * this.settings.cellSize + offsety + this.settings.position.y;
+
+        context.drawImage(this.breadcrumb, x, y, imgWidth, imgHeight);
+      }
+    }
+
     render(context) {
+      context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+
       var pattern = context.createPattern(this.background, 'repeat');
       context.fillStyle = pattern;
       context.fillRect(0, 0, context.canvas.width, context.canvas.height);
@@ -269,6 +383,7 @@
         });
       });
 
+      this.drawBreadcrumbs(context);
       // context.lineWidth = 12;
       // Game.Line.draw(context, {
       //   lines: lines,

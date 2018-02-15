@@ -53,6 +53,8 @@
         39: EVENTS.MOVE_RIGHT,
         40: EVENTS.MOVE_DOWN
       };
+
+      // TODO: capture keypressed and keyup. Keep keydown event in list until keyup
       this.eventHandlers = {
         [EVENTS.MOVE_LEFT]: (event) => this.movePlayer(event),
         [EVENTS.MOVE_RIGHT]: (event) => this.movePlayer(event),
@@ -61,7 +63,7 @@
       };
     }
 
-    movePlayer(event) {
+    movePlayer(event, elapsedTime) {
       let cell = this.gameState.maze.getCell(this.gameState.player.position);
       if (event === EVENTS.MOVE_LEFT) {
         this.gameState.player.orientation = -1;
@@ -107,8 +109,10 @@
     update() {
       let currentCell = 
         this.gameState.maze.getCell(this.gameState.player.position);
-      currentCell.visited = true;
-      this.gameState.maze.visitedCells.push(currentCell);
+      if (currentCell !== this.gameState.maze.visitedCells[this.gameState.maze.visitedCells.length - 1]) {
+        currentCell.visited = true;
+        this.gameState.maze.visitedCells.push(currentCell);
+      }
     }
 
     render() {

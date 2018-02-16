@@ -1,72 +1,47 @@
 Game.Character = (function () {
-  const DIRECTION = {
-    UP: 0,
-    DOWN: 1,
-    LEFT: 2,
-    RIGHT: 3
-  };
-
   class Character {
-    constructor(settings) {
+    constructor(settings, type) {
       Object.assign(this, settings);
-      this.monsterRight = new Image();
-      this.monsterRight.src = "Assets/monster-right.png";
-      this.monsterLeft = new Image();
-      this.monsterLeft.src = "Assets/monster-left.png";
-      this.monsterFront = new Image();
-      this.monsterFront.src = "Assets/monster-front.png";
-      this.monsterBack = new Image();
-      this.monsterBack.src = "Assets/monster-back.png";
-      this.direction = DIRECTION.RIGHT;
+      this.type = type;
+      this.right = new Image();
+      this.right.src = "Assets/" + type + "-right.png";
+      this.left = new Image();
+      this.left.src = "Assets/" + type + "-left.png";
+      this.front = new Image();
+      this.front.src = "Assets/" + type + "-front.png";
+      this.back = new Image();
+      this.back.src = "Assets/" + type + "-back.png";
 
-      this.moveTime = 1000;
-      this.time = 0;
+      this.direction = this.direction || Game.DIRECTION.RIGHT;
     }
 
     getBoundingBox() {
-      
-    }
+      let width = this.mazeSettings.cellSize / 2;
+      let height = width;
 
-    move() {
-      let neighbors = Object.values(this.currentCell.neighbors).filter((neighbor) => neighbor.connected);
-      let nextIndex = Math.floor(Math.random() * neighbors.length);
-      let nextCell = neighbors[nextIndex].cell;
-      let direction = neighbors[nextIndex].location;
-      this.currentCell = nextCell;
-      switch (direction) {
-        case "up":
-          this.direction = DIRECTION.UP;
-          break;
-        case "down":
-          this.direction = DIRECTION.DOWN;
-          break;
-        case "left":
-          this.direction = DIRECTION.LEFT;
-          break;
-        case "right":
-          this.direction = DIRECTION.RIGHT;
-          break;
-      }
-    }
+      let offsetx = (this.mazeSettings.cellSize - width) / 2;
+      let offsety = (this.mazeSettings.cellSize - height) / 4;
+      let x = this.currentCell.position.x * this.mazeSettings.cellSize + offsetx + this.mazeSettings.position.x;
+      let y = this.currentCell.position.y * this.mazeSettings.cellSize + offsety + this.mazeSettings.position.y;
 
-    update(elapsedTime) {
-      this.time += elapsedTime;
-      if (this.time >= this.moveTime) {
-        this.time -= this.moveTime;
-        this.move();
-      }
+      let ul = { x: x, y: y };
+      let ur = { x: x + width, y: y };
+      let lr = { x: x + width, y: y + height };
+      let ll = { x: x, y: y + height };
+
+      return [[ul, ur], [ur, lr], [lr, ll], [ll, ul]];      
     }
 
     render(context) {
       let img;
-      if (this.direction === DIRECTION.UP) {
-        img = this.monsterBack;
-      } else if (this.direction === DIRECTION.DOWN) {
-        img = this.monsterFront;
-      } else if (this.direction === DIRECTION.LEFT) {
-        img = this.monsterLeft;
-      } else if (this.direction === DIRECTION.RIGHT) {
-        img = this.monsterRight;
+      if (this.direction === Game.DIRECTION.UP) {
+        img = this.back;
+      } else if (this.direction === Game.DIRECTION.DOWN) {
+        img = this.front;
+      } else if (this.direction === Game.DIRECTION.LEFT) {
+        img = this.left;
+      } else if (this.direction === Game.DIRECTION.RIGHT) {
+        img = this.right;
       }
       
       let imgWidth = this.mazeSettings.cellSize / 2;
@@ -84,7 +59,23 @@ Game.Character = (function () {
       // });
     }
 
-    static get DIRECTION() { return DIRECTION; }
+    move(direction) {
+      this.currentCell = this.currentCell.neighbors[direction].cell;
+      switch (direction) {
+        case "up":
+          this.direction = Game.DIRECTION.UP;
+          break;
+        case "down":
+          this.direction = Game.DIRECTION.DOWN;
+          break;
+        case "left":
+          this.direction = Game.DIRECTION.LEFT;
+          break;
+        case "right":
+          this.direction = Game.DIRECTION.RIGHT;
+          break;
+      }
+    }
   }
 
   return Character;

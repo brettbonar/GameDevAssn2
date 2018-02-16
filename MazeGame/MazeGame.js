@@ -4,7 +4,11 @@
     MOVE_DOWN: 2,
     MOVE_LEFT: 3,
     MOVE_RIGHT: 4,
-    SHOOT: 5
+    SHOOT: 5,
+    HINT: 6,
+    TOGGLE_BREADCRUMBS: 7,
+    TOGGLE_PATH: 8,
+    TOGGLE_SCORE: 9
   };
   
   class MazeGame { 
@@ -14,6 +18,11 @@
       // this.canvas.style.width = "1000px";
       // this.canvas.style.height = "1200px";
       this.context = this.canvas.getContext("2d");
+      this.gameSettings = {
+        showBreadcrumbs: false,
+        showPath: false,
+        showScore: true
+      };
       this.mazeSettings = {
         size: {
           rows: 20,
@@ -22,7 +31,8 @@
           height: this.canvas.width // Intentionally same as width
           // width: this.canvas.width / 2,
           // height: this.canvas.height / 2
-        }
+        },
+        gameSettings: this.gameSettings
       };
       this.mazeSettings.cellSize = 48;
       // Center maze in canvas
@@ -37,18 +47,20 @@
 
       this.gameState = {
         maze: new Game.Maze(this.mazeSettings),
-        player: new Game.Player({
-          mazeSettings: this.mazeSettings,
-          position: {
-            x: 0,
-            y: 0
-          }
-        }),
-        numMoves: 0
+        numMoves: 0,
+        score: 1000,
+        time: 0
       };
+      this.gameState.player = new Game.Player({
+        mazeSettings: this.mazeSettings,
+        position: Object.assign({}, this.gameState.maze.settings.start.position),
+        currentCell: this.gameState.maze.getCell({ x: 0, y: 0 })
+      });
 
       this.projectiles = [];
       this.monsters = [];
+      this.hints = [];
+      this.scores = [];
       // Create a new random monster at least half the maze cells away
       let x = Math.floor(Math.random() * this.mazeSettings.size.columns / 2) + this.mazeSettings.size.columns / 2;
       let y = Math.floor(Math.random() * this.mazeSettings.size.rows / 2) + this.mazeSettings.size.rows / 2;
@@ -59,11 +71,15 @@
 
       this.events = [];
       this.keyBindings = {
-        32: EVENTS.SHOOT,
+        32: EVENTS.SHOOT, // space
         37: EVENTS.MOVE_LEFT,
         38: EVENTS.MOVE_UP,
         39: EVENTS.MOVE_RIGHT,
-        40: EVENTS.MOVE_DOWN
+        40: EVENTS.MOVE_DOWN,
+        66: EVENTS.TOGGLE_BREADCRUMBS, // B
+        72: EVENTS.HINT, // H
+        80: EVENTS.TOGGLE_PATH, // P
+        89: EVENTS.TOGGLE_SCORE // Y
       };
 
       // TODO: capture keypressed and keyup. Keep keydown event in list until keyup
@@ -72,9 +88,14 @@
         [EVENTS.MOVE_RIGHT]: (event) => this.movePlayer(event),
         [EVENTS.MOVE_UP]: (event) => this.movePlayer(event),
         [EVENTS.MOVE_DOWN]: (event) => this.movePlayer(event),
-        [EVENTS.SHOOT]: (event) => this.shoot(event)
+        [EVENTS.SHOOT]: (event) => this.shoot(event),
+        [EVENTS.HINT]: (event) => this.hint(event),
+        [EVENTS.TOGGLE_BREADCRUMBS]: (event) => this.gameSettings.showBreadcrumbs = !this.gameSettings.showBreadcrumbs,
+        [EVENTS.TOGGLE_PATH]: (event) => this.gameSettings.showPath = !this.gameSettings.showPath,
+        [EVENTS.TOGGLE_SCORE]: (event) => this.gameSettings.showScore = !this.gameSettings.showScore
       };
 
+      this.hinted = false;
     }
 
     getAbsolutePosition(position) {
@@ -84,6 +105,16 @@
       };
     }
 
+    hint(event) {
+      this.hints.push(new Game.HintGhost({
+        mazeSettings: this.mazeSettings,
+        position: Object.assign({}, this.gameState.player.currentCell.position),
+        currentCell: this.gameState.player.currentCell,
+        directions: this.gameState.maze.currentShortestPath.slice(0, 2),
+        direction: this.gameState.player.direction
+      }));
+    }
+
     shoot(event) {
       this.projectiles.push(new Game.Projectile(Object.assign({
         direction: this.gameState.player.direction,
@@ -91,42 +122,64 @@
       }, this.getAbsolutePosition(this.gameState.player.position))));
     }
 
-    updatePath() {
+    updatePath(event) {
       let cell = this.gameState.maze.getCell(this.gameState.player.position);
+      this.gameState.player.currentCell = cell;
       if (this.gameState.maze.currentShortestPath.length > 1 && cell === this.gameState.maze.currentShortestPath[1].cell) {
         this.gameState.maze.currentShortestPath.shift();
+      } else if (cell !== this.gameState.maze.currentShortestPath[0].cell && cell != this.gameState.maze.settings.end) {
+        let action;
+        switch (event) {
+          case EVENTS.MOVE_LEFT:
+            action = "right";
+            break;
+          case EVENTS.MOVE_RIGHT:
+          action = "left";
+            break;
+          case EVENTS.MOVE_UP:
+            action = "down";
+            break;
+          case EVENTS.MOVE_DOWN:
+          action = "up";
+            break;
+        }
+
+        this.gameState.maze.currentShortestPath.unshift({
+          cell: cell,
+          action: action
+        });
       }
     }
 
     movePlayer(event, elapsedTime) {
       let cell = this.gameState.maze.getCell(this.gameState.player.position);
       if (event === EVENTS.MOVE_LEFT) {
-        this.gameState.player.direction = Game.Player.DIRECTION.LEFT;
+        this.gameState.player.direction = Game.DIRECTION.LEFT;
         if (cell.neighbors.left.connected) {
           this.gameState.player.position.x -= 1;
           this.numMoves += 1;
         }
       } else if (event === EVENTS.MOVE_RIGHT) {
-        this.gameState.player.direction = Game.Player.DIRECTION.RIGHT;
+        this.gameState.player.direction = Game.DIRECTION.RIGHT;
         if (cell.neighbors.right.connected) {
           this.gameState.player.position.x += 1;
           this.numMoves += 1;
         }
       } else if (event === EVENTS.MOVE_UP) {
-        this.gameState.player.direction = Game.Player.DIRECTION.UP;
+        this.gameState.player.direction = Game.DIRECTION.UP;
         if (cell.neighbors.up.connected) {
           this.gameState.player.position.y -= 1;
           this.numMoves += 1;
         }
       } else if (event === EVENTS.MOVE_DOWN) {
-        this.gameState.player.direction = Game.Player.DIRECTION.DOWN;
+        this.gameState.player.direction = Game.DIRECTION.DOWN;
         if (cell.neighbors.down.connected) {
           this.gameState.player.position.y += 1;
           this.numMoves += 1;
         }
       }
 
-      this.updatePath();
+      this.updatePath(event);
     }
 
     handleKeyEvent(e) {
@@ -168,28 +221,24 @@
       return false;
     }
 
+    addScore(points, position) {
+      let pos = this.getAbsolutePosition(position);
+      this.scores.push(new Game.FloatingText({
+        text: "+" + points,
+        start: pos,
+        end: { x: pos.x, y: pos.y - 40 },
+        duration: 1500
+      }));
+    }
+
     intersectsMonster(projectileLine) {
       for (const monster of this.monsters) {
-        // TODO: save dimensions somewhere
-        let imgWidth = this.mazeSettings.cellSize / 2;
-        let imgHeight = imgWidth;;
-
-        let offsetx = (this.mazeSettings.cellSize - imgWidth) / 2;
-        let offsety = (this.mazeSettings.cellSize - imgHeight) / 4;
-        let x = monster.currentCell.position.x * this.mazeSettings.cellSize + offsetx + this.mazeSettings.position.x;
-        let y = monster.currentCell.position.y * this.mazeSettings.cellSize + offsety + this.mazeSettings.position.y;
-  
-        let ul = { x: x, y: y };
-        let ur = { x: x + imgWidth, y: y };
-        let lr = { x: x + imgWidth, y: y + imgHeight };
-        let ll = { x: x, y: y + imgHeight };
-
-        let lines = [[ul, ur], [ur, lr], [lr, ll], [ll, ul]];
-        if (lines.some((line) => this.intersects(projectileLine[0].x, projectileLine[0].y, projectileLine[1].x, projectileLine[1].y,
+        if (monster.getBoundingBox().some((line) => this.intersects(projectileLine[0].x, projectileLine[0].y, projectileLine[1].x, projectileLine[1].y,
           line[0].x, line[0].y, line[1].x, line[1].y))) {
             this.monsters = this.monsters.filter((m) => m !== monster);
+            this.addScore(100, monster.currentCell.position);
+            this.gameState.score += 100;
             return true;
-            // TODO: add points
           }
       }
 
@@ -219,6 +268,34 @@
       }
 
       this.projectiles = this.projectiles.filter((projectile) => !projectile.remove);
+
+      this.hints = this.hints.filter((hint) => !hint.done);
+      for (const hint of this.hints) {
+        hint.update(elapsedTime);
+      }
+
+      this.scores = this.scores.filter((score) => !score.done);
+      for (const score of this.scores) {
+        score.update(elapsedTime);
+      }
+
+      this.gameState.score -= elapsedTime / 1000;
+      this.gameState.time += elapsedTime;
+
+      if (currentCell === this.gameState.maze.settings.end) {
+        this.done = true;
+        Game.scores.push({
+          score: this.gameState.score,
+          time: this.gameState.time
+        });
+      }
+    }
+
+    toReadableTime(milliseconds) {
+      let seconds = ((milliseconds / 1000) % 60).toFixed().toLocaleString().padStart(2, "0");
+      let minutes = (milliseconds / (1000 * 60)).toFixed().toLocaleString().padStart(2, "0");
+      
+      return minutes + ":" + seconds;
     }
 
     render() {
@@ -232,17 +309,38 @@
       for (const monster of this.monsters) {
         monster.render(this.context);
       }
+
+      for (const hint of this.hints) {
+        hint.render(this.context);
+      }
+
+      for (const score of this.scores) {
+        score.render(this.context);
+      }
+
+      Game.Text.draw(this.context, {
+        text: "Score: " + this.gameState.score.toFixed(),
+        x: 40,
+        y: 40
+      });
+      Game.Text.draw(this.context, {
+        text: "Time: " + this.toReadableTime(this.gameState.time),
+        x: this.canvas.width - 250,
+        y: 40
+      });
     }
 
     gameLoop(currentTime) {
-      let elapsedTime = currentTime - this.previousTime;
-      this.previousTime = currentTime;
-    
-      this.processInput();
-      this.update(elapsedTime);
-      this.render(elapsedTime);
-    
-      requestAnimationFrame((currentTime) => this.gameLoop(currentTime));
+      if (!this.done) {
+        let elapsedTime = currentTime - this.previousTime;
+        this.previousTime = currentTime;
+      
+        this.processInput();
+        this.update(elapsedTime);
+        this.render(elapsedTime);
+      
+        requestAnimationFrame((currentTime) => this.gameLoop(currentTime));
+      }
     }
       
     start() {

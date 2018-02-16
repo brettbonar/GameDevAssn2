@@ -28,6 +28,15 @@
 
   };
 
+  Game.scores = [];
+
+  Game.DIRECTION = {
+    UP: "up",
+    DOWN: "down",
+    LEFT: "left",
+    RIGHT: "right"
+  };
+
   Game.credits = function () {
   };
 })();

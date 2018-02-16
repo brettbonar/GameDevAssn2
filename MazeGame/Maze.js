@@ -174,7 +174,7 @@
       this.breadcrumb = new Image();
       this.breadcrumb.src = "Assets/knob.png";
       this.rope = new Image();
-      this.rope.src = "Assets/rope.png";
+      this.rope.src = "Assets/rope-texture.png";
       this.ropeVertical = new Image();
       this.ropeVertical.src = "Assets/rope-vertical.png";
 
@@ -322,7 +322,7 @@
         this.settings.end = this.maze[Math.floor(Math.random() * this.settings.size.columns)][this.settings.size.rows - 1];
       }
       this.shortestPath = this.setShortestPath();
-      this.currentShortestPath = this.shortestPath.slice(1);
+      this.currentShortestPath = this.shortestPath.slice();
     }
 
     randomize() {
@@ -408,50 +408,41 @@
       
     }
 
+    getLineParams(line) {
+      let lineParams = [];
+      line.forEach((point) => {
+        lineParams.push({
+          x: point.x * this.settings.cellSize + this.settings.cellSize / 2 + this.settings.position.x,
+          y: point.y * this.settings.cellSize + this.settings.cellSize / 2 + this.settings.position.y
+        });
+      });
+
+      return lineParams;
+    }
+
+    drawRope(context, lines) {
+      context.save();
+      context.lineWidth = 4;
+      Game.Line.draw(context, {
+        lines: lines,
+        strokeStyle: context.createPattern(this.rope, "repeat")
+        // fillStyle: this.style.fillStyle
+      });
+      context.restore();
+    }
+
     drawBreadcrumbs(context) {
+      let ropes = [];
       for (const i of this.visitedCells.keys()) {
         let current = this.visitedCells[i];
         let prev = this.visitedCells[i - 1];
-        let next = this.visitedCells[i + 1];
 
         if (i > 0) {
-          // Prev
-          if (current.position.x > prev.position.x) {
-            // Horizontal, moved right
-            this.drawRope(context, current.position, false, false);
-          } else if (current.position.x < prev.position.x) {
-            // Horizontal, moved left
-            this.drawRope(context, current.position, false, true);
-          }
-
-          if (current.position.y > prev.position.y) {
-            // Horizontal, moved right
-            this.drawRope(context, current.position, true, true);
-          } else if (current.position.y < prev.position.y) {
-            // Horizontal, moved left
-            this.drawRope(context, current.position, true, false);
-          }
-        }
-
-        if (i < this.visitedCells.length - 1) {
-          // Next
-          if (current.position.x > next.position.x) {
-            // Horizontal, moved right
-            this.drawRope(context, current.position, false, false);
-          } else if (current.position.x < next.position.x) {
-            // Horizontal, moved left
-            this.drawRope(context, current.position, false, true);
-          }
-
-          if (current.position.y > next.position.y) {
-            // Horizontal, moved right
-            this.drawRope(context, current.position, true, true);
-          } else if (current.position.y < next.position.y) {
-            // Horizontal, moved left
-            this.drawRope(context, current.position, true, false);
-          }
+          ropes.push(this.getLineParams([prev.position, current.position]));
         }
       }
+
+      this.drawRope(context, ropes);
 
       for (const cell of this.visitedCells) {
         let imgHeight = this.settings.cellSize / 4;
@@ -508,7 +499,7 @@
     render(context) {
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
-      var pattern = context.createPattern(this.background, 'repeat');
+      var pattern = context.createPattern(this.background, "repeat");
       context.fillStyle = pattern;
       context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 
@@ -525,9 +516,14 @@
         });
       });
 
-      this.drawBreadcrumbs(context);
-      this.drawPath(context);
+      if (this.settings.gameSettings.showBreadcrumbs) {
+        this.drawBreadcrumbs(context);
+      }
       this.drawEntranceAndExit(context);
+
+      if (this.settings.gameSettings.showPath) {
+        this.drawPath(context);
+      }
       // context.lineWidth = 12;
       // Game.Line.draw(context, {
       //   lines: lines,

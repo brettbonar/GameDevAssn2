@@ -25,15 +25,6 @@ Game.HintGhost = (function () {
       this.targetPosition = this.getAbsolutePosition(this.target.cell.position);
       this.startPosition = this.getAbsolutePosition(this.position);
       this.position = this.getAbsolutePosition(this.position);
-
-      // let canvas = document.getElementById("canvas-main");
-      // this.canvasGroup = document.getElementsByClassName("canvas-group")[0];
-      // this.canvas = document.createElement("canvas");
-      // this.canvas.classList.add("game-canvas");
-      // this.canvas.height = canvas.height;
-      // this.canvas.width = canvas.width;
-      // this.canvasGroup.appendChild(this.canvas);
-      // this.context = this.canvas.getContext("2d");
     }
 
     update(elapsedTime) {

@@ -26,17 +26,22 @@
         showPath: false,
         showScore: true
       };
+      let settings = {
+        rows: 20,
+        columns: 20
+      };
+      // TODO: handle vertical
       this.mazeSettings = {
-        size: {
-          rows: 20,
-          columns: 20,
-          width: 20 * 48,
-          height: 20 * 48 // Intentionally same as width
-          // width: this.canvas.width / 2,
-          // height: this.canvas.height / 2
-        },
-        cellSize: 48,
-        gameSettings: this.gameSettings
+        gameSettings: this.gameSettings,
+        cellSize: 48
+      };
+      this.mazeSettings.size = {
+        rows: settings.rows,
+        columns: settings.columns,
+        width: 20 * 48,
+        height: 20 * 48 // Intentionally same as width
+        // width: this.canvas.width / 2,
+        // height: this.canvas.height / 2
       };
       // Center maze in canvas
       this.mazeSettings.position = {
@@ -48,23 +53,23 @@
       // Math.min(this.mazeSettings.size.width / this.mazeSettings.size.columns,
       //   this.mazeSettings.size.height / this.mazeSettings.size.rows);
 
-      this.fog = document.createElement("canvas");
-      this.fog.classList.add("game-canvas");
-      this.fog.height = this.canvas.height;
-      this.fog.width = this.canvas.width;
-      this.canvasGroup.appendChild(this.fog);
-      this.fogContext = this.fog.getContext("2d");
-      this.fogContext.fillRect(this.mazeSettings.position.x, this.mazeSettings.position.y,
-        this.mazeSettings.size.width, this.mazeSettings.size.height);
+      // this.fog = document.createElement("canvas");
+      // this.fog.classList.add("game-canvas");
+      // this.fog.height = this.canvas.height;
+      // this.fog.width = this.canvas.width;
+      // this.canvasGroup.appendChild(this.fog);
+      // this.fogContext = this.fog.getContext("2d");
+      // this.fogContext.fillRect(this.mazeSettings.position.x, this.mazeSettings.position.y,
+      //   this.mazeSettings.size.width, this.mazeSettings.size.height);
 
-      this.fog2 = document.createElement("canvas");
-      this.fog2.classList.add("game-canvas");
-      this.fog2.height = this.canvas.height;
-      this.fog2.width = this.canvas.width;
-      this.canvasGroup.appendChild(this.fog2);
-      this.fogContext2 = this.fog2.getContext("2d");
-      this.fogContext2.fillRect(this.mazeSettings.position.x, this.mazeSettings.position.y,
-        this.mazeSettings.size.width, this.mazeSettings.size.height);
+      // this.fog2 = document.createElement("canvas");
+      // this.fog2.classList.add("game-canvas");
+      // this.fog2.height = this.canvas.height;
+      // this.fog2.width = this.canvas.width;
+      // this.canvasGroup.appendChild(this.fog2);
+      // this.fogContext2 = this.fog2.getContext("2d");
+      // this.fogContext2.fillRect(this.mazeSettings.position.x, this.mazeSettings.position.y,
+      //   this.mazeSettings.size.width, this.mazeSettings.size.height);
 
       this.gameState = {
         maze: new Game.Maze(this.mazeSettings),
@@ -309,8 +314,14 @@
         this.gameState.maze.visitedCells.push(currentCell);
       }
 
+      this.monsters = this.monsters.filter((monster) => !monster.dead);
       for (const monster of this.monsters) {
-        monster.update(elapsedTime);
+        monster.update(elapsedTime, currentCell);
+        if (monster.currentCell === currentCell) {
+          monster.dead = true;
+          this.addScore(-100, monster.currentCell.position);
+          this.gameState.score -= 100;
+        }
       }
 
       for (const projectile of this.projectiles) {
@@ -385,7 +396,7 @@
         y: 40
       });
 
-      this.updateFog();
+      //this.updateFog();
     }
 
     gameLoop(currentTime) {

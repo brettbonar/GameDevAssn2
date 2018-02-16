@@ -462,7 +462,7 @@
       let prev;
       for (let i = 0; i < this.currentShortestPath.length; i++) {
         let path = this.currentShortestPath[i];
-        if (prev && path.action !== prev.action) {
+        if (prev && path.action && path.action !== prev.action) {
           let imgHeight = this.settings.cellSize;
           let imgWidth = imgHeight * this.signs[path.action].width / this.signs[path.action].height;
           let offsetx = (this.settings.cellSize - imgWidth) / 2;

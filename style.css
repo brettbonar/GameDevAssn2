@@ -1,2 +1,100 @@
 .game-canvas {
 }
+
+.controls {
+  width: 1000px;
+  height: 100px;
+  display: flex;
+  flex-direction: row;
+}
+
+.control {
+  flex: 1;
+  margin: 10px;
+  /* Button style */
+  border: 3px solid #401818;
+  background: #9c3e3e;
+  background: -webkit-gradient(linear, left top, left bottom, from(#d66565), to(#9c3e3e));
+  background: -webkit-linear-gradient(top, #d66565, #9c3e3e);
+  background: -moz-linear-gradient(top, #d66565, #9c3e3e);
+  background: -ms-linear-gradient(top, #d66565, #9c3e3e);
+  background: -o-linear-gradient(top, #d66565, #9c3e3e);
+  background-image: -ms-linear-gradient(top, #d66565 0%, #9c3e3e 100%);
+  padding: 13.5px 27px;
+  -webkit-border-radius: 1px;
+  -moz-border-radius: 1px;
+  border-radius: 1px;
+  -webkit-box-shadow: rgba(255,255,255,0.4) 0 1px 0, inset rgba(255,255,255,0.4) 0 1px 0;
+  -moz-box-shadow: rgba(255,255,255,0.4) 0 1px 0, inset rgba(255,255,255,0.4) 0 1px 0;
+  box-shadow: rgba(255,255,255,0.4) 0 1px 0, inset rgba(255,255,255,0.4) 0 1px 0;
+  text-shadow: #8f3232 0 1px 0;
+  color: #ffffff;
+  font-size: 24px;
+  font-family: helvetica, serif;
+  text-decoration: none;
+  vertical-align: middle;
+  }
+.control:hover {
+  border: 3px solid #401818;
+  text-shadow: #571e1e 0 1px 0;
+  background: #9c3e3e;
+  background: -webkit-gradient(linear, left top, left bottom, from(#d66565), to(#9c3e3e));
+  background: -webkit-linear-gradient(top, #d66565, #9c3e3e);
+  background: -moz-linear-gradient(top, #d66565, #9c3e3e);
+  background: -ms-linear-gradient(top, #d66565, #9c3e3e);
+  background: -o-linear-gradient(top, #d66565, #9c3e3e);
+  background-image: -ms-linear-gradient(top, #d66565 0%, #9c3e3e 100%);
+  color: #fff;
+  }
+.control:active {
+  text-shadow: #571e1e 0 1px 0;
+  border: 3px solid #401818;
+  background: #d66565;
+  background: -webkit-gradient(linear, left top, left bottom, from(#9c3e3e), to(#9c3e3e));
+  background: -webkit-linear-gradient(top, #9c3e3e, #d66565);
+  background: -moz-linear-gradient(top, #9c3e3e, #d66565);
+  background: -ms-linear-gradient(top, #9c3e3e, #d66565);
+  background: -o-linear-gradient(top, #9c3e3e, #d66565);
+  background-image: -ms-linear-gradient(top, #9c3e3e 0%, #d66565 100%);
+  color: #fff;
+  }
+
+/* Modal stuff from https://www.w3schools.com/howto/howto_css_modals.asp */
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}

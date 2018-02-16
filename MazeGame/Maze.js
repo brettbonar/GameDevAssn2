@@ -35,6 +35,7 @@
       this.visited = false;
       this.neighbors = {
         up: {
+          location: "up",
           line: [
             {
               x: settings.position.x,
@@ -48,6 +49,7 @@
           connected: false
         }, 
         down: {
+          location: "down",
           line: [
             {
               x: settings.position.x,
@@ -61,6 +63,7 @@
           connected: false
         },
         left: {
+          location: "left",
           line: [
             {
               x: settings.position.x,
@@ -74,6 +77,7 @@
           connected: false
         },
         right: {
+          location: "right",
           line: [
             {
               x: settings.position.x + 1,
@@ -89,7 +93,7 @@
       };
     }
 
-    getLineParams(context, line) {
+    getLineParams(line) {
       let lineParams = [];
       line.forEach((point) => {
         lineParams.push({
@@ -171,6 +175,24 @@
       this.breadcrumb.src = "Assets/knob.png";
       this.rope = new Image();
       this.rope.src = "Assets/rope.png";
+      this.ropeVertical = new Image();
+      this.ropeVertical.src = "Assets/rope-vertical.png";
+
+      this.upstairs = new Image();
+      this.upstairs.src = "Assets/upstairs.png";
+      this.downstairs = new Image();
+      this.downstairs.src = "Assets/downstairs.png";
+
+      this.signs = {
+        up: new Image(),
+        right: new Image(),
+        left: new Image(),
+        down: new Image()
+      };
+      this.signs.up.src = "Assets/sign-up.png",
+      this.signs.right.src = "Assets/sign-right.png";
+      this.signs.left.src = "Assets/sign-left.png";
+      this.signs.down.src = "Assets/sign-down.png";
 
       this.visitedCells = [];
       this.settings = settings;
@@ -239,6 +261,70 @@
       this.removeEdge(neighborCell, cell);
     }
 
+    constructPath(state, meta) {
+      let actions = [];
+      while (true) {
+        let row = meta.find((element) => element.cell === state);
+        if (row) {
+          state = row.parent;
+          actions.push({
+            cell: row.parent,
+            action: row.action
+          });
+        } else {
+          break;
+        }
+      }
+
+      return actions.reverse();
+    }
+
+    setShortestPath() {
+      let open = [this.settings.start];
+      let closed = new Set();
+      let meta = [];
+
+      while (open.length > 0) {
+        let parent = open.pop();
+        if (parent === this.settings.end) {
+          return this.constructPath(parent, meta);
+        }
+        for (let action in parent.neighbors) {
+          let neighbor = parent.neighbors[action];
+          if (neighbor.connected) {
+            if (closed.has(neighbor.cell)) {
+              continue;
+            }
+
+            if (!open.includes(neighbor.cell)) {
+              meta.push({
+                cell: neighbor.cell,
+                parent: parent,
+                action: action
+              });
+              open.unshift(neighbor.cell);
+            }
+          }
+        }
+        closed.add(parent);
+      }
+    }
+
+    setPath() {
+      // Get random start and end points
+      this.settings.start = this.maze[0][0];
+      let side = Math.random();
+      if (side < 0.5) {
+        // Max X
+        this.settings.end = this.maze[this.settings.size.columns - 1][Math.floor(Math.random() * this.settings.size.rows)];
+      } else {
+        // Max Y
+        this.settings.end = this.maze[Math.floor(Math.random() * this.settings.size.columns)][this.settings.size.rows - 1];
+      }
+      this.shortestPath = this.setShortestPath();
+      this.currentShortestPath = this.shortestPath.slice(1);
+    }
+
     randomize() {
       // Randomized Prim's
       let x = Math.floor(Math.random() * this.settings.size.columns);
@@ -255,8 +341,23 @@
         frontier.splice(frontier.indexOf(current), 1);
         grid.push(current);
       }
+
+      this.setPath();
+
+      // Save walls
+      this.walls = [];
+      for (const col of this.maze) {
+        for (const cell of col) {
+          Object.values(cell.neighbors).forEach((neighbor) => {
+            if (!neighbor.connected) {
+              this.walls.push(cell.getLineParams(neighbor.line));
+            }
+          });
+        }
+      }
     }
 
+    // TODO: draw line with texture -- rotate texture somehow?
     drawRope(context, position, rotate, opposite) {
       let imgHeight;
       let imgWidth;
@@ -289,17 +390,18 @@
       let y = position.y * this.settings.cellSize + offsety + this.settings.position.y;
 
       if (rotate) {
-        // save the unrotated context of the canvas so we can restore it later
-        // the alternative is to untranslate & unrotate after drawing
-        context.save();
+        // // save the unrotated context of the canvas so we can restore it later
+        // // the alternative is to untranslate & unrotate after drawing
+        // context.save();
         
-        context.translate(x + imgWidth / 2, y + imgHeight / 2);
-        context.rotate(Math.PI / 180);
-        context.translate(-(x + imgWidth / 2), -(y + imgHeight / 2));
+        // context.translate(x + imgWidth / 2, y + imgHeight / 2);
+        // context.rotate(Math.PI / 180);
+        // context.translate(-(x + imgWidth / 2), -(y + imgHeight / 2));
         
-        // we’re done with the rotating so restore the unrotated context
-        context.drawImage(this.rope, x, y, imgWidth, imgHeight);
-        context.restore();
+        // // we’re done with the rotating so restore the unrotated context
+        // context.drawImage(this.rope, x, y, imgWidth, imgHeight);
+        // context.restore();
+        context.drawImage(this.ropeVertical, x, y, imgWidth, imgHeight);
       } else {
         context.drawImage(this.rope, x, y, imgWidth, imgHeight);
       }
@@ -363,6 +465,46 @@
       }
     }
 
+    drawPath(context) {
+      let prev;
+      for (let i = 0; i < this.currentShortestPath.length; i++) {
+        let path = this.currentShortestPath[i];
+        if (prev && path.action !== prev.action) {
+          let imgHeight = this.settings.cellSize;
+          let imgWidth = imgHeight * this.signs[path.action].width / this.signs[path.action].height;
+          let offsetx = (this.settings.cellSize - imgWidth) / 2;
+          let offsety = -10;//(this.settings.cellSize - imgHeight) / 2;
+          let x = path.cell.position.x * this.settings.cellSize + offsetx + this.settings.position.x;
+          let y = path.cell.position.y * this.settings.cellSize + offsety + this.settings.position.y;
+  
+          context.drawImage(this.signs[path.action], x, y, imgWidth, imgHeight);
+        }
+        prev = path;
+      }
+    }
+
+    drawEntranceAndExit(context) {
+      {
+      let cell = this.settings.start;
+      let imgHeight = this.settings.cellSize * 0.75;
+      let imgWidth = imgHeight * this.upstairs.width / this.upstairs.height;
+      let offsetx = (this.settings.cellSize - imgWidth) / 2;
+      let offsety = (this.settings.cellSize - imgHeight) / 2;
+      let x = cell.position.x * this.settings.cellSize + offsetx + this.settings.position.x;
+      let y = cell.position.y * this.settings.cellSize + offsety + this.settings.position.y;
+      context.drawImage(this.upstairs, x, y, imgWidth, imgHeight);
+      }
+      
+      let endCell = this.settings.end;
+      let imgHeight = this.settings.cellSize * 0.75;
+      let imgWidth = imgHeight * this.downstairs.width / this.downstairs.height;
+      let offsetx = (this.settings.cellSize - imgWidth) / 2;
+      let offsety = (this.settings.cellSize - imgHeight) / 2;
+      let x = endCell.position.x * this.settings.cellSize + offsetx + this.settings.position.x;
+      let y = endCell.position.y * this.settings.cellSize + offsety + this.settings.position.y;
+      context.drawImage(this.downstairs, x, y, imgWidth, imgHeight);
+    }
+
     render(context) {
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
@@ -375,15 +517,17 @@
         col.forEach((cell) => {
           cell.render(context);
           
-          Object.values(cell.neighbors).forEach((neighbor) => {
-            if (!neighbor.connected) {
-              lines.push(cell.getLineParams(context, neighbor.line));
-            }
-          });
+          // Object.values(cell.neighbors).forEach((neighbor) => {
+          //   if (!neighbor.connected) {
+          //     lines.push(cell.getLineParams(context, neighbor.line));
+          //   }
+          // });
         });
       });
 
       this.drawBreadcrumbs(context);
+      this.drawPath(context);
+      this.drawEntranceAndExit(context);
       // context.lineWidth = 12;
       // Game.Line.draw(context, {
       //   lines: lines,

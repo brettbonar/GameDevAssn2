@@ -287,7 +287,9 @@
       while (open.length > 0) {
         let parent = open.pop();
         if (parent === this.settings.end) {
-          return this.constructPath(parent, meta);
+          let path = this.constructPath(parent, meta);
+          path.push({ cell: this.settings.end });
+          return path;
         }
         for (let action in parent.neighbors) {
           let neighbor = parent.neighbors[action];

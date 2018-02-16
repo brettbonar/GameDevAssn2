@@ -13,8 +13,11 @@
   
   class MazeGame { 
     constructor() {
+
       // TODO: pass this in
       this.canvas = document.getElementById("canvas-main");
+      this.canvasGroup = document.getElementsByClassName("canvas-group")[0];
+
       // this.canvas.style.width = "1000px";
       // this.canvas.style.height = "1200px";
       this.context = this.canvas.getContext("2d");
@@ -27,14 +30,14 @@
         size: {
           rows: 20,
           columns: 20,
-          width: this.canvas.width,
-          height: this.canvas.width // Intentionally same as width
+          width: 20 * 48,
+          height: 20 * 48 // Intentionally same as width
           // width: this.canvas.width / 2,
           // height: this.canvas.height / 2
         },
+        cellSize: 48,
         gameSettings: this.gameSettings
       };
-      this.mazeSettings.cellSize = 48;
       // Center maze in canvas
       this.mazeSettings.position = {
         x: (this.canvas.width - this.mazeSettings.size.columns * this.mazeSettings.cellSize) / 2,
@@ -44,6 +47,24 @@
       };
       // Math.min(this.mazeSettings.size.width / this.mazeSettings.size.columns,
       //   this.mazeSettings.size.height / this.mazeSettings.size.rows);
+
+      this.fog = document.createElement("canvas");
+      this.fog.classList.add("game-canvas");
+      this.fog.height = this.canvas.height;
+      this.fog.width = this.canvas.width;
+      this.canvasGroup.appendChild(this.fog);
+      this.fogContext = this.fog.getContext("2d");
+      this.fogContext.fillRect(this.mazeSettings.position.x, this.mazeSettings.position.y,
+        this.mazeSettings.size.width, this.mazeSettings.size.height);
+
+      this.fog2 = document.createElement("canvas");
+      this.fog2.classList.add("game-canvas");
+      this.fog2.height = this.canvas.height;
+      this.fog2.width = this.canvas.width;
+      this.canvasGroup.appendChild(this.fog2);
+      this.fogContext2 = this.fog2.getContext("2d");
+      this.fogContext2.fillRect(this.mazeSettings.position.x, this.mazeSettings.position.y,
+        this.mazeSettings.size.width, this.mazeSettings.size.height);
 
       this.gameState = {
         maze: new Game.Maze(this.mazeSettings),
@@ -94,8 +115,40 @@
         [EVENTS.TOGGLE_PATH]: (event) => this.gameSettings.showPath = !this.gameSettings.showPath,
         [EVENTS.TOGGLE_SCORE]: (event) => this.gameSettings.showScore = !this.gameSettings.showScore
       };
+    }
 
-      this.hinted = false;
+    // Thanks to https://codepen.io/zyklus/pen/prvnb
+    // I don't completely know how this works
+    updateFog() {
+      let pos = this.getAbsolutePosition(this.gameState.player.currentCell.position);
+      // partially hide the entire map and re-reval where we are now
+      this.fogContext.globalCompositeOperation = 'source-over';
+      this.fogContext.clearRect( this.mazeSettings.position.x, this.mazeSettings.position.y, this.mazeSettings.size.width, this.mazeSettings.size.width );
+      this.fogContext.fillStyle = 'rgba( 0, 0, 0, .7 )';
+      this.fogContext.fillRect ( this.mazeSettings.position.x, this.mazeSettings.position.y, this.mazeSettings.size.width, this.mazeSettings.size.width );
+
+      let r1 = this.mazeSettings.cellSize * 2;
+      let r2 = this.mazeSettings.cellSize * 4;
+
+      var radGrd = this.fogContext.createRadialGradient( pos.x, pos.y, 
+        r1, pos.x, pos.y, r2);
+      radGrd.addColorStop(  0, 'rgba( 0, 0, 0,  1 )' );
+      radGrd.addColorStop( .8, 'rgba( 0, 0, 0, .1 )' );
+      radGrd.addColorStop(  1, 'rgba( 0, 0, 0,  0 )' );
+
+      this.fogContext.globalCompositeOperation = 'destination-out';
+      this.fogContext.fillStyle = radGrd;
+      this.fogContext.fillRect( pos.x - 300, pos.y - 300, 300*2, 300*2 );
+
+      // Context 2 stays dark black, but is never cleared
+      var radGrd = this.fogContext2.createRadialGradient( pos.x, pos.y, r1, pos.x, pos.y, r2 );
+      radGrd.addColorStop(  0, 'rgba( 0, 0, 0,  1 )' );
+      radGrd.addColorStop( .8, 'rgba( 0, 0, 0, .1 )' );
+      radGrd.addColorStop(  1, 'rgba( 0, 0, 0,  0 )' );
+
+      this.fogContext2.globalCompositeOperation = 'destination-out';
+      this.fogContext2.fillStyle = radGrd;
+      this.fogContext2.fillRect( pos.x - r2, pos.y - r2, r2*2, r2*2 );
     }
 
     getAbsolutePosition(position) {
@@ -110,9 +163,11 @@
         mazeSettings: this.mazeSettings,
         position: Object.assign({}, this.gameState.player.currentCell.position),
         currentCell: this.gameState.player.currentCell,
-        directions: this.gameState.maze.currentShortestPath.slice(0, 2),
+        directions: this.gameState.maze.currentShortestPath.slice(0, 3),
         direction: this.gameState.player.direction
       }));
+      this.gameState.score -= 25;
+      this.addScore(-25, this.gameState.player.currentCell.position);
     }
 
     shoot(event) {
@@ -224,7 +279,8 @@
     addScore(points, position) {
       let pos = this.getAbsolutePosition(position);
       this.scores.push(new Game.FloatingText({
-        text: "+" + points,
+        text: (points >= 0 ? "+" : "") + points,
+        fillStyle: points >= 0 ? "gold" : "red",
         start: pos,
         end: { x: pos.x, y: pos.y - 40 },
         duration: 1500
@@ -328,6 +384,8 @@
         x: this.canvas.width - 250,
         y: 40
       });
+
+      this.updateFog();
     }
 
     gameLoop(currentTime) {

@@ -3,16 +3,20 @@ Game.Character = (function () {
     constructor(settings, type) {
       Object.assign(this, settings);
       this.type = type;
-      this.right = new Image();
-      this.right.src = "Assets/" + type + "-right.png";
-      this.left = new Image();
-      this.left.src = "Assets/" + type + "-left.png";
-      this.front = new Image();
-      this.front.src = "Assets/" + type + "-front.png";
-      this.back = new Image();
-      this.back.src = "Assets/" + type + "-back.png";
-
       this.direction = this.direction || Game.DIRECTION.RIGHT;
+    }
+
+    getAbsolutePosition(position) {
+      let imgWidth = this.mazeSettings.cellSize / 2;
+      let imgHeight = imgWidth * this.front.height / this.front.width;
+      let offsetx = (this.mazeSettings.cellSize - imgWidth) / 2;
+      let offsety = (this.mazeSettings.cellSize - imgHeight) / 4;
+      let x = position.x * this.mazeSettings.cellSize + offsetx + this.mazeSettings.position.x;
+      let y = position.y * this.mazeSettings.cellSize + offsety + this.mazeSettings.position.y;
+      return {
+        x: x,
+        y: y
+      };
     }
 
     getBoundingBox() {
@@ -46,12 +50,9 @@ Game.Character = (function () {
       
       let imgWidth = this.mazeSettings.cellSize / 2;
       let imgHeight = imgWidth * img.height / img.width;
-      let offsetx = (this.mazeSettings.cellSize - imgWidth) / 2;
-      let offsety = (this.mazeSettings.cellSize - imgHeight) / 4;
-      let x = this.currentCell.position.x * this.mazeSettings.cellSize + offsetx + this.mazeSettings.position.x;
-      let y = this.currentCell.position.y * this.mazeSettings.cellSize + offsety + this.mazeSettings.position.y;
+      let pos = this.getAbsolutePosition(this.currentCell.position);
 
-      context.drawImage(img, x, y, imgWidth, imgHeight);
+      context.drawImage(img, pos.x, pos.y, imgWidth, imgHeight);
       // Game.Circle.draw(context, {
       //   x: this.position.x * this.mazeSettings.cellSize + this.mazeSettings.cellSize / 2 + this.mazeSettings.position.x,
       //   y: this.position.y * this.mazeSettings.cellSize + this.mazeSettings.cellSize / 2 + this.mazeSettings.position.y,

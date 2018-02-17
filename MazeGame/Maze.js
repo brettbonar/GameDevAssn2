@@ -1,5 +1,4 @@
 Game.Maze = (function () {
-  Graphics.ImageCache.put("wall", "Assets/wall.png");
   Graphics.ImageCache.put("knob", "Assets/knob.png");
   Graphics.ImageCache.put("rope-texture", "Assets/rope-texture.png");
   Graphics.ImageCache.put("upstairs", "Assets/upstairs.png");

@@ -25,6 +25,7 @@ Game.Monster = (function () {
     render(context) {
       super.render(context);
 
+      // Show exclamation mark
       if (this.chasing) {
         let pos = this.getAbsolutePosition(this.currentCell.position);
         pos.y -= 35;

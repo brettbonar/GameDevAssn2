@@ -17,8 +17,8 @@ Game.Projectile = (function () {
     }
 
     update(elapsedTime) {
-      this.last.x = this.x;
-      this.last.y = this.y;
+      // this.last.x = this.x;
+      // this.last.y = this.y;
       let dir = 1;
       if (this.direction === Game.DIRECTION.UP) {
         this.y -= this.mazeSettings.cellSize * (elapsedTime / this.speed);

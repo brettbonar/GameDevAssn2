@@ -265,28 +265,31 @@ Game.MazeGame = (function () {
         if (cell.neighbors.left.connected) {
           this.gameState.player.position.x -= 1;
           this.numMoves += 1;
+          this.gameState.score -= 1;
         }
       } else if (event === EVENTS.MOVE_RIGHT) {
         this.gameState.player.direction = Game.DIRECTION.RIGHT;
         if (cell.neighbors.right.connected) {
           this.gameState.player.position.x += 1;
           this.numMoves += 1;
+          this.gameState.score -= 1;
         }
       } else if (event === EVENTS.MOVE_UP) {
         this.gameState.player.direction = Game.DIRECTION.UP;
         if (cell.neighbors.up.connected) {
           this.gameState.player.position.y -= 1;
           this.numMoves += 1;
+          this.gameState.score -= 1;
         }
       } else if (event === EVENTS.MOVE_DOWN) {
         this.gameState.player.direction = Game.DIRECTION.DOWN;
         if (cell.neighbors.down.connected) {
           this.gameState.player.position.y += 1;
           this.numMoves += 1;
+          this.gameState.score -= 1;
         }
       }
 
-      this.gameState.score -= 1;
       this.updatePath(event);
     }
 

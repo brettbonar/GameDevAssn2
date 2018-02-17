@@ -29,6 +29,10 @@ input[type=checkbox] {
   text-shadow: 4px 4px 0 rgba(140, 117, 117, 0.7);
 }
 
+.choose-difficulty {
+  text-align: center;
+}
+
 button.game-back {
   z-index: 999;
   padding: 5px 10px;

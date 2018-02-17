@@ -19,14 +19,22 @@ Game.Character = (function () {
       };
     }
 
-    getBoundingBox() {
+    getBoundingBox(position) {
       let width = this.mazeSettings.cellSize / 2;
       let height = width;
 
-      let offsetx = (this.mazeSettings.cellSize - width) / 2;
-      let offsety = (this.mazeSettings.cellSize - height) / 4;
-      let x = this.currentCell.position.x * this.mazeSettings.cellSize + offsetx + this.mazeSettings.position.x;
-      let y = this.currentCell.position.y * this.mazeSettings.cellSize + offsety + this.mazeSettings.position.y;
+      let x; 
+      let y;
+      if (position) {
+        x = position.x;
+        y = position.y;
+      } else {
+        let offsetx = (this.mazeSettings.cellSize - width) / 2;
+        let offsety = (this.mazeSettings.cellSize - height) / 4;
+        x = this.currentCell.position.x * this.mazeSettings.cellSize + offsetx + this.mazeSettings.position.x;
+        y = this.currentCell.position.y * this.mazeSettings.cellSize + offsety + this.mazeSettings.position.y;
+      }
+
 
       let ul = { x: x, y: y };
       let ur = { x: x + width, y: y };

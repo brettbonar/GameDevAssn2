@@ -139,7 +139,7 @@
       }
     }
 
-    createRandomMonster() {
+    createRandomMonsters() {
       // Create a new random monster at least half the maze cells away
       for (let i = 0; i < this.mazeSettings.size.columns / 10; i++) {
         let x = Math.floor(Math.random() * this.mazeSettings.size.columns / 2) + this.mazeSettings.size.columns / 2;
@@ -151,7 +151,7 @@
       }
     }
 
-    createRandomTrap() {
+    createRandomTraps() {
       // Create a new random trap at least half the maze cells away
       for (let i = 0; i < this.mazeSettings.size.columns / 5; i++) {
         let x = Math.floor(Math.random() * this.mazeSettings.size.columns / 2) + this.mazeSettings.size.columns / 2;
@@ -171,8 +171,8 @@
       });
 
       if (this.gameSettings.hardMode) {
-        this.createRandomMonster();
-        this.createRandomTrap();
+        this.createRandomMonsters();
+        this.createRandomTraps();
       }      
 
       // Create a new treasure chest at least half the maze cells away

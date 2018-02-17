@@ -1,8 +1,7 @@
 Game.Character = (function () {
   class Character {
-    constructor(settings, type) {
+    constructor(settings) {
       Object.assign(this, settings);
-      this.type = type;
       this.direction = this.direction || Game.DIRECTION.RIGHT;
     }
 
@@ -61,7 +60,7 @@ Game.Character = (function () {
       let pos = this.getAbsolutePosition(this.currentCell.position);
 
       context.drawImage(img, pos.x, pos.y, imgWidth, imgHeight);
-      // Game.Circle.draw(context, {
+      // Graphics.Circle..draw(context, {
       //   x: this.position.x * this.mazeSettings.cellSize + this.mazeSettings.cellSize / 2 + this.mazeSettings.position.x,
       //   y: this.position.y * this.mazeSettings.cellSize + this.mazeSettings.cellSize / 2 + this.mazeSettings.position.y,
       //   r: this.mazeSettings.cellSize / 4

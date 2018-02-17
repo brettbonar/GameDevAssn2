@@ -32,9 +32,9 @@
     if (size === 5) {
       return "Weakling";
     } else if (size === 10) {
-      return "Apprentice";
-    } else if (size === 15) {
       return "Novice";
+    } else if (size === 15) {
+      return "Experienced";
     } else if (size === 20) {
       return "Adventurer";
     }

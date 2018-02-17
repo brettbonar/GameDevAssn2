@@ -1,7 +1,7 @@
-(function () {
-  class Text extends Game.Graphic {
+Graphics.Text = (function () {
+  class Text {
     constructor(spec) {
-      super(spec);
+      Object.assign(this, spec);
     }
 
     static draw(context, params) {
@@ -16,5 +16,5 @@
     }
   }
 
-  Game.Text = Text;
+  return Text;
 })();

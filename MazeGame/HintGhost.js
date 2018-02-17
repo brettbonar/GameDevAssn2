@@ -1,20 +1,16 @@
 Game.HintGhost = (function () {
-  let right = new Image();
-  right.src = "Assets/player-ghost-right.png";
-  let left = new Image();
-  left.src = "Assets/player-ghost-left.png";
-  let front = new Image();
-  front.src = "Assets/player-ghost-front.png";
-  let back = new Image();
-  back.src = "Assets/player-ghost-back.png";
+  Graphics.ImageCache.put("player-ghost-right", "Assets/player-ghost-right.png");
+  Graphics.ImageCache.put("player-ghost-left", "Assets/player-ghost-left.png");
+  Graphics.ImageCache.put("player-ghost-front", "Assets/player-ghost-front.png");
+  Graphics.ImageCache.put("player-ghost-back", "Assets/player-ghost-back.png");
 
   class HintGhost extends Game.Character {
     constructor(settings) {
       super(settings, "player-ghost");
-      this.right = right;
-      this.front = front;
-      this.left = left;
-      this.back = back;
+      this.right = Graphics.ImageCache.get("player-ghost-right");
+      this.left = Graphics.ImageCache.get("player-ghost-left");
+      this.front = Graphics.ImageCache.get("player-ghost-front");
+      this.back = Graphics.ImageCache.get("player-ghost-back");
 
       this.length = this.directions.length - 1;
       this.duration = 1000;

@@ -1,4 +1,6 @@
-(function () {
+Game.MazeGame = (function () {
+  Graphics.ImageCache.put("treasure", "Assets/treasure.png");
+
   const EVENTS = {
     MOVE_UP: 1,
     MOVE_DOWN: 2,
@@ -14,63 +16,50 @@
   
   class MazeGame { 
     constructor(size, hardMode) {
-      // TODO: pass this in
       this.canvas = document.getElementById("canvas-main");
-      this.canvasGroup = document.getElementsByClassName("canvas-group")[0];
-
-      // this.canvas.style.width = "1000px";
-      // this.canvas.style.height = "1200px";
       this.context = this.canvas.getContext("2d");
+
       this.gameSettings = {
         showBreadcrumbs: false,
         showPath: false,
         showScore: true,
         hardMode: hardMode
       };
-      let settings = {
-        rows: size,
-        columns: size
-      };
-      // TODO: handle vertical
+      
       this.mazeSettings = {
         gameSettings: this.gameSettings,
         cellSize: 42
       };
       this.mazeSettings.size = {
-        rows: settings.rows,
-        columns: settings.columns,
+        rows: size,
+        columns: size,
         width: size * this.mazeSettings.cellSize,
         height: size * this.mazeSettings.cellSize
-        // width: this.canvas.width / 2,
-        // height: this.canvas.height / 2
       };
       // Center maze in canvas
       this.mazeSettings.position = {
         x: (this.canvas.width - this.mazeSettings.size.columns * this.mazeSettings.cellSize) / 2,
         y: (this.canvas.height - this.mazeSettings.size.rows * this.mazeSettings.cellSize) / 2
-        // x: this.canvas.width / 4,
-        // y: this.canvas.height / 4
       };
-      // Math.min(this.mazeSettings.size.width / this.mazeSettings.size.columns,
-      //   this.mazeSettings.size.height / this.mazeSettings.size.rows);
 
       if (this.gameSettings.hardMode) {
-        this.fog = document.createElement("canvas");
-        this.fog.classList.add("game-canvas");
-        this.fog.height = this.canvas.height;
-        this.fog.width = this.canvas.width;
-        this.canvasGroup.appendChild(this.fog);
-        this.fogContext = this.fog.getContext("2d");
-        this.fogContext.fillRect(this.mazeSettings.position.x, this.mazeSettings.position.y,
+        this.canvasGroup = document.getElementsByClassName("canvas-group")[0];
+        this.lightFog = document.createElement("canvas");
+        this.lightFog.classList.add("game-canvas");
+        this.lightFog.height = this.canvas.height;
+        this.lightFog.width = this.canvas.width;
+        this.canvasGroup.appendChild(this.lightFog);
+        this.lightFogContext = this.lightFog.getContext("2d");
+        this.lightFogContext.fillRect(this.mazeSettings.position.x, this.mazeSettings.position.y,
           this.mazeSettings.size.width, this.mazeSettings.size.height);
 
-        this.fog2 = document.createElement("canvas");
-        this.fog2.classList.add("game-canvas");
-        this.fog2.height = this.canvas.height;
-        this.fog2.width = this.canvas.width;
-        this.canvasGroup.appendChild(this.fog2);
-        this.fogContext2 = this.fog2.getContext("2d");
-        this.fogContext2.fillRect(this.mazeSettings.position.x, this.mazeSettings.position.y,
+        this.darkFog = document.createElement("canvas");
+        this.darkFog.classList.add("game-canvas");
+        this.darkFog.height = this.canvas.height;
+        this.darkFog.width = this.canvas.width;
+        this.canvasGroup.appendChild(this.darkFog);
+        this.darkFogContext = this.darkFog.getContext("2d");
+        this.darkFogContext.fillRect(this.mazeSettings.position.x, this.mazeSettings.position.y,
           this.mazeSettings.size.width, this.mazeSettings.size.height);
       }
 
@@ -87,11 +76,6 @@
       this.scores = [];
       this.treasures = [];
       this.traps = [];
-
-      this.images = {
-        treasure: new Image()
-      };
-      this.images.treasure.src = "Assets/treasure.png";
 
       this.events = [];
       this.keyBindings = {
@@ -152,10 +136,9 @@
     }
 
     createRandomTraps() {
-      // Create a new random trap at least half the maze cells away
-      for (let i = 0; i < this.mazeSettings.size.columns / 5; i++) {
-        let x = Math.floor(Math.random() * this.mazeSettings.size.columns / 2) + this.mazeSettings.size.columns / 2;
-        let y = Math.floor(Math.random() * this.mazeSettings.size.rows / 2) + this.mazeSettings.size.rows / 2;
+      for (let i = 0; i < this.mazeSettings.size.columns / 4; i++) {
+        let x = Math.floor(Math.random() * this.mazeSettings.size.columns - 1) + 1;
+        let y = Math.floor(Math.random() * this.mazeSettings.size.rows - 1) + 1;
         this.traps.push(new Game.Trap({
           currentCell: this.gameState.maze.getCell({ x: Math.floor(x), y: Math.floor(y)}),
           mazeSettings: this.mazeSettings
@@ -185,33 +168,33 @@
     updateFog() {
       let pos = this.getAbsolutePosition(this.gameState.player.currentCell.position);
       // partially hide the entire map and re-reval where we are now
-      this.fogContext.globalCompositeOperation = "source-over";
-      this.fogContext.clearRect( this.mazeSettings.position.x, this.mazeSettings.position.y, this.mazeSettings.size.width, this.mazeSettings.size.height );
-      this.fogContext.fillStyle = "rgba( 0, 0, 0, .7 )";
-      this.fogContext.fillRect ( this.mazeSettings.position.x, this.mazeSettings.position.y, this.mazeSettings.size.width, this.mazeSettings.size.height );
+      this.lightFogContext.globalCompositeOperation = "source-over";
+      this.lightFogContext.clearRect( this.mazeSettings.position.x, this.mazeSettings.position.y, this.mazeSettings.size.width, this.mazeSettings.size.height );
+      this.lightFogContext.fillStyle = "rgba( 0, 0, 0, .7 )";
+      this.lightFogContext.fillRect ( this.mazeSettings.position.x, this.mazeSettings.position.y, this.mazeSettings.size.width, this.mazeSettings.size.height );
 
       let r1 = this.mazeSettings.cellSize * 2;
       let r2 = this.mazeSettings.cellSize * 4;
 
-      var radGrd = this.fogContext.createRadialGradient( pos.x, pos.y, 
+      var radGrd = this.lightFogContext.createRadialGradient( pos.x, pos.y, 
         r1, pos.x, pos.y, r2);
       radGrd.addColorStop(  0, "rgba( 0, 0, 0,  1 )" );
       radGrd.addColorStop( .8, "rgba( 0, 0, 0, .1 )" );
       radGrd.addColorStop(  1, "rgba( 0, 0, 0,  0 )" );
 
-      this.fogContext.globalCompositeOperation = "destination-out";
-      this.fogContext.fillStyle = radGrd;
-      this.fogContext.fillRect( pos.x - 300, pos.y - 300, 300*2, 300*2 );
+      this.lightFogContext.globalCompositeOperation = "destination-out";
+      this.lightFogContext.fillStyle = radGrd;
+      this.lightFogContext.fillRect( pos.x - 300, pos.y - 300, 300*2, 300*2 );
 
       // Context 2 stays dark black, but is never cleared
-      var radGrd = this.fogContext2.createRadialGradient( pos.x, pos.y, r1, pos.x, pos.y, r2 );
+      var radGrd = this.darkFogContext.createRadialGradient( pos.x, pos.y, r1, pos.x, pos.y, r2 );
       radGrd.addColorStop(  0, "rgba( 0, 0, 0,  1 )" );
       radGrd.addColorStop( .8, "rgba( 0, 0, 0, .1 )" );
       radGrd.addColorStop(  1, "rgba( 0, 0, 0,  0 )" );
 
-      this.fogContext2.globalCompositeOperation = "destination-out";
-      this.fogContext2.fillStyle = radGrd;
-      this.fogContext2.fillRect( pos.x - r2, pos.y - r2, r2*2, r2*2 );
+      this.darkFogContext.globalCompositeOperation = "destination-out";
+      this.darkFogContext.fillStyle = radGrd;
+      this.darkFogContext.fillRect( pos.x - r2, pos.y - r2, r2*2, r2*2 );
     }
 
     getAbsolutePosition(position) {
@@ -222,9 +205,9 @@
     }
 
     end() {
-      if (this.fog) {
-        this.canvasGroup.removeChild(this.fog);
-        this.canvasGroup.removeChild(this.fog2);
+      if (this.lightFog) {
+        this.canvasGroup.removeChild(this.lightFog);
+        this.canvasGroup.removeChild(this.darkFog);
       }
     }
 
@@ -349,7 +332,7 @@
     addScore(points, position) {
       this.gameState.score += points;
       let pos = this.getAbsolutePosition(position);
-      this.scores.push(new Game.FloatingText({
+      this.scores.push(new Graphics.FloatingText({
         text: (points >= 0 ? "+" : "") + points,
         fillStyle: points >= 0 ? "gold" : "red",
         start: pos,
@@ -460,30 +443,55 @@
     }
 
     drawTreasure(cell) {
+      let img = Graphics.ImageCache.get("treasure");
       let pos = this.getAbsolutePosition(cell.position);
       let imgWidth = this.mazeSettings.cellSize / 2;
-      let imgHeight = imgWidth * this.images.treasure.height / this.images.treasure.width;
-      this.context.drawImage(this.images.treasure, pos.x - 15, pos.y - 10, this.mazeSettings.cellSize / 2, this.mazeSettings.cellSize / 2);
+      let imgHeight = imgWidth * img.height / img.width;
+      this.context.drawImage(img, pos.x - 15, pos.y - 10, this.mazeSettings.cellSize / 2, this.mazeSettings.cellSize / 2);
     }
 
-    renderScore() {
+    drawVictory() {
       this.context.save();
-      this.context.globalAlpha = 0.5;
-      this.context.fillStyle = "black";
+      this.context.fillStyle = "rgba(0, 0, 0, 0.5)";
       this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
       this.context.restore();
 
       if (this.gameSettings.hardMode) {
-        this.fogContext.clearRect(0, 0, this.fog.width, this.fog.height);
-        this.fogContext2.clearRect(0, 0, this.fog2.width, this.fog2.height);
+        this.lightFogContext.clearRect(0, 0, this.lightFog.width, this.lightFog.height);
+        this.darkFogContext.clearRect(0, 0, this.darkFog.width, this.darkFog.height);
       }
 
-      Game.Text.draw(this.context, {
+      Graphics.Text.draw(this.context, {
         text: "Victory!",
         font: "60px Comic Sans MS",
         textAlign: "center",
         x: this.canvas.width / 2,
         y: this.canvas.height / 2
+      });
+    }
+
+    drawScores() {
+      let scoreText = "Score: " + this.gameState.score.toFixed();
+      if (this.gameSettings.showScore) {
+        Graphics.Text.draw(this.context, {
+          text: scoreText,
+          x: this.mazeSettings.position.x,
+          y: this.mazeSettings.position.y - 30
+        });
+      }
+
+      let timex = this.mazeSettings.position.x + this.mazeSettings.size.width - 150;
+      let timey = this.mazeSettings.position.y - 30;
+      let timeText = "Time: " + this.toReadableTime(this.gameState.time);
+      if (this.mazeSettings.size.width < this.context.measureText(scoreText + timeText).width) {
+        timex = this.mazeSettings.position.x;
+        timey = this.mazeSettings.position.y + this.mazeSettings.size.height + 40;
+      }
+
+      Graphics.Text.draw(this.context, {
+        text: timeText,
+        x: timex,
+        y: timey
       });
     }
 
@@ -517,33 +525,14 @@
         score.render(this.context);
       }
 
-      let scoreText = "Score: " + this.gameState.score.toFixed();
-      Game.Text.draw(this.context, {
-        text: scoreText,
-        x: this.mazeSettings.position.x,
-        y: this.mazeSettings.position.y - 30
-      });
-
-      let timex = this.mazeSettings.position.x + this.mazeSettings.size.width - 150;
-      let timey = this.mazeSettings.position.y - 30;
-      let timeText = "Time: " + this.toReadableTime(this.gameState.time);
-      if (this.mazeSettings.size.width < this.context.measureText(scoreText + timeText).width) {
-        timex = this.mazeSettings.position.x;
-        timey = this.mazeSettings.position.y + this.mazeSettings.size.height + 40;
-      }
-
-      Game.Text.draw(this.context, {
-        text: timeText,
-        x: timex,
-        y: timey
-      });
-
       if (this.gameSettings.hardMode) {
         this.updateFog();
       }
 
+      this.drawScores();
+
       if (this.done) {
-        this.renderScore();
+        this.drawVictory();
       }
     }
 
@@ -567,5 +556,5 @@
     static get EVENTS() { return EVENTS; }
   }
 
-  Game.MazeGame = MazeGame;
+  return MazeGame;
 })();

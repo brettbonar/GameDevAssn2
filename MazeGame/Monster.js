@@ -1,24 +1,19 @@
 Game.Monster = (function () {
-  let right = new Image();
-  right.src = "Assets/monster-right.png";
-  let left = new Image();
-  left.src = "Assets/monster-left.png";
-  let front = new Image();
-  front.src = "Assets/monster-front.png";
-  let back = new Image();
-  back.src = "Assets/monster-back.png";
-  let exclamation = new Image();
-  exclamation.src = "Assets/exclamation.png";
+  Graphics.ImageCache.put("monster-right", "Assets/monster-right.png");
+  Graphics.ImageCache.put("monster-left", "Assets/monster-left.png");
+  Graphics.ImageCache.put("monster-front", "Assets/monster-front.png");
+  Graphics.ImageCache.put("monster-back", "Assets/monster-back.png");
+  Graphics.ImageCache.put("exclamation", "Assets/exclamation.png");
 
   class Monster extends Game.Character {
     constructor(settings) {
-      super(settings, "monster");
+      super(settings);
       this.moveTime = 1000;
       this.time = 0;
-      this.right = right;
-      this.front = front;
-      this.left = left;
-      this.back = back;
+      this.right = Graphics.ImageCache.get("monster-right");
+      this.front = Graphics.ImageCache.get("monster-front");
+      this.left = Graphics.ImageCache.get("monster-left");
+      this.back = Graphics.ImageCache.get("monster-back");
       this.chasing = false;
     }
 
@@ -34,7 +29,7 @@ Game.Monster = (function () {
         let imgWidth = 6;
         let imgHeight = 24;
 
-        context.drawImage(exclamation, pos.x, pos.y, imgWidth, imgHeight);
+        context.drawImage(Graphics.ImageCache.get("exclamation"), pos.x, pos.y, imgWidth, imgHeight);
       }
     }
 

@@ -1,9 +1,9 @@
 Game.Projectile = (function () {
+  Graphics.ImageCache.put("axe", "Assets/axe.png");
+
   class Projectile {
     constructor(settings) {
       Object.assign(this, settings);
-      this.image = new Image();
-      this.image.src = "Assets/axe.png";
 
       // Milliseconds per cell
       this.speed = 200;
@@ -36,19 +36,21 @@ Game.Projectile = (function () {
     }
 
     render(context) {
+      let image = Graphics.ImageCache.get("axe");
+
       let imgWidth = 16;
-      let imgHeight = imgWidth * this.image.height / this.image.width;
+      let imgHeight = imgWidth * image.height / image.width;
       let x = this.x - imgWidth / 2;
       let y = this.y - imgHeight / 2;
 
-      context.save();
-  
-      context.translate(x + imgWidth / 2, y + imgHeight / 2);
-      context.rotate((this.rotation * Math.PI) / 180);
-      context.translate(-(x + imgWidth / 2), -(y + imgHeight / 2));
-      context.drawImage(this.image, x, y, imgWidth, imgHeight);
-
-      context.restore();
+      Graphics.Image.draw(context, {
+        width: imgWidth,
+        height: imgHeight,
+        x: x,
+        y: y,
+        rotation: this.rotation,
+        image: Graphics.ImageCache.get("axe")
+      })
     }
   }
 

@@ -1,7 +1,7 @@
-(function () {
-  class Circle extends Game.Graphic {
+Graphics.Circle = (function () {
+  class Circle {
     constructor(spec) {
-      super(spec);
+      Object.assign(this, spec);
     }
 
     static draw(context, params) {
@@ -26,5 +26,5 @@
     }
   }
 
-  Game.Circle = Circle;
+  return Circle;
 })();

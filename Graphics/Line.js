@@ -1,7 +1,7 @@
-(function () {
-  class Line extends Game.Graphic {
+Graphics.Line = (function () {
+  class Line {
     constructor(spec) {
-      super(spec);
+      Object.assign(this, spec);
     }
 
     static drawLine(context, line) {
@@ -14,9 +14,6 @@
 
     static draw(context, params) {
       context.save();
-      // context.translate(params.center.x, params.center.y);
-      // context.rotate(params.rotation);
-      // context.translate(-params.center.x, -params.center.y);
 
       context.beginPath();
 
@@ -43,5 +40,5 @@
     }
   }
 
-  Game.Line = Line;
+  return Line;
 })();

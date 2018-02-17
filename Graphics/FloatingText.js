@@ -1,5 +1,5 @@
-(function () {
-  class FloatingText extends Game.Text {
+Graphics.FloatingText = (function () {
+  class FloatingText extends Graphics.Text {
     constructor(spec) {
       super(spec);
       this.currentTime = 0;
@@ -28,5 +28,5 @@
     }
   }
 
-  Game.FloatingText = FloatingText;
+  return FloatingText;
 })();

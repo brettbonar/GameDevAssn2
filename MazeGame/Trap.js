@@ -12,7 +12,8 @@ Game.Trap = (function () {
       this.inactiveImg = inactiveImg;
       this.currentTime = 0;
       this.duration = 2000;
-      this.delay = 4000;
+      // 1-3 second delay
+      this.delay = Math.random() * 2000 + 1000;
     }
 
     getAbsolutePosition(position) {

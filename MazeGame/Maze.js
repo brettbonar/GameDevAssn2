@@ -168,8 +168,6 @@
     constructor(settings) {
       this.wall = new Image();
       this.wall.src = "Assets/wall.png";
-      this.background = new Image();
-      this.background.src = "Assets/background.png";
 
       this.breadcrumb = new Image();
       this.breadcrumb.src = "Assets/knob.png";
@@ -500,10 +498,6 @@
 
     render(context) {
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-
-      var pattern = context.createPattern(this.background, "repeat");
-      context.fillStyle = pattern;
-      context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 
       let lines = [];
       this.maze.forEach((col) => {
